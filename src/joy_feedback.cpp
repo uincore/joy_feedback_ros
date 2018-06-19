@@ -31,11 +31,14 @@ private:
   ros::Subscriber rumble_sub_;
   ros::Subscriber periodic_sub_;
   ros::Subscriber play_sub_;
+  ros::Subscriber ffset_sub_;
 
   std::string device_;
   int fd_;
   uint32_t features_[4];
   std::vector<struct ff_effect> effects_;
+  struct input_event ie;
+
   bool initted_;
 };
 
@@ -126,18 +129,43 @@ void JoyFeedback::periodicCallback(const joy_feedback_ros::Periodic::ConstPtr& m
   }
 }
 
+
+void JoyFeedback::FFsetCallback(const joy_feedback_ros::FFSet::ConstPtr& msg)
+{
+  if (!initted_) return;
+
+  ROS_INFO_STREAM("ffset " << msg->gain << " " << msg->autocenter);
+
+  if( msg->gain >=0 && msg->gain <=100 ) {
+    ie.type = EV_FF;
+    ie.code = FF_GAIN;
+    ie.value = 0xFFFFUL * gain / 100;
+    if (write(fd,_ &ie, sizeof(ie)) < 0 )
+       ROS_WARN_STREAM("set gain " << strerror(errno));
+  }
+
+  if( msg->autocenter >=0 && msg->autocenter <=100 ) {
+    ie.type = EV_FF;
+    ie.code = FF_AUTOCENTER;
+    ie.value = 0xFFFFUL * autocenter / 100;
+    if (write(fd,_ &ie, sizeof(ie)) < 0 )
+       ROS_WARN_STREAM("set autocenter " << strerror(errno));
+  }
+}
+
 JoyFeedback::JoyFeedback() :
   fd_(0)
 {
   rumble_sub_ = nh_.subscribe<joy_feedback_ros::Rumble>("rumble", 1, &JoyFeedback::rumbleCallback, this);
   periodic_sub_ = nh_.subscribe<joy_feedback_ros::Periodic>("periodic", 1, &JoyFeedback::periodicCallback, this);
   play_sub_ = nh_.subscribe("play", 1, &JoyFeedback::playCallback, this);
+  ffset_sub_ = nh_.subscribe("ffset", 1, &JoyFeedback::FFsetCallback, this);
   initted_ = init();
 }
 
 bool JoyFeedback::init()
 {
-  ros::param::param<std::string>("device", device_, "/dev/input/event13");
+  ros::param::param<std::string>("device", device_, "/dev/input/event15");
 
   ROS_INFO_STREAM("device " << device_);
 
