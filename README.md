@@ -11,7 +11,7 @@ Set a strong and weak magnitude to 18000 and then play the (hard-coded) index 0
     roslaunch joy_feedback_ros joy_feedback.launch 
     rostopic pub -1 /rumble joy_feedback_ros/Rumble 18000 18000
     rostopic pub /play std_msgs/UInt16 1
-
+    rostopic pub -1 /ffset joy_feedback_ros/FFset 50 50
 
 A sine effect:
 
