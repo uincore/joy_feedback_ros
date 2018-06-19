@@ -130,7 +130,7 @@ void JoyFeedback::periodicCallback(const joy_feedback_ros::Periodic::ConstPtr& m
 }
 
 
-void JoyFeedback::FFsetCallback(const joy_feedback_ros::FFSet::ConstPtr& msg)
+void JoyFeedback::FFsetCallback(const joy_feedback_ros::FFset::ConstPtr& msg)
 {
   if (!initted_) return;
 
