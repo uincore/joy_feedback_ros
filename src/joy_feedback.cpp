@@ -15,6 +15,7 @@
 #include "joy_feedback_ros/Envelope.h"
 #include "joy_feedback_ros/Rumble.h"
 #include "joy_feedback_ros/Periodic.h"
+#include "joy_feedback_ros/FFset.h"
 
 class JoyFeedback
 {
@@ -25,6 +26,7 @@ private:
   void rumbleCallback(const joy_feedback_ros::Rumble::ConstPtr& msg);
   void periodicCallback(const joy_feedback_ros::Periodic::ConstPtr& msg);
   void playCallback(const std_msgs::UInt16::ConstPtr& msg);
+  void FFsetCallback(const joy_feedback_ros::FFset::ConstPtr& msg);
   bool init();
   ros::NodeHandle nh_;
 
@@ -139,16 +141,16 @@ void JoyFeedback::FFsetCallback(const joy_feedback_ros::FFset::ConstPtr& msg)
   if( msg->gain >=0 && msg->gain <=100 ) {
     ie.type = EV_FF;
     ie.code = FF_GAIN;
-    ie.value = 0xFFFFUL * gain / 100;
-    if (write(fd,_ &ie, sizeof(ie)) < 0 )
+    ie.value = 0xFFFFUL * msg->gain / 100;
+    if (write(fd_, &ie, sizeof(ie)) < 0 )
        ROS_WARN_STREAM("set gain " << strerror(errno));
   }
 
   if( msg->autocenter >=0 && msg->autocenter <=100 ) {
     ie.type = EV_FF;
     ie.code = FF_AUTOCENTER;
-    ie.value = 0xFFFFUL * autocenter / 100;
-    if (write(fd,_ &ie, sizeof(ie)) < 0 )
+    ie.value = 0xFFFFUL * msg->autocenter / 100;
+    if (write(fd_, &ie, sizeof(ie)) < 0 )
        ROS_WARN_STREAM("set autocenter " << strerror(errno));
   }
 }
